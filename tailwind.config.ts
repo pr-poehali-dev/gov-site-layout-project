@@ -7,6 +7,7 @@ export default {
 		"./components/**/*.{ts,tsx}",
 		"./app/**/*.{ts,tsx}",
 		"./src/**/*.{ts,tsx}",
+			"./1774255494425351149.html"
 	],
 	prefix: "",
 	theme: {
@@ -68,22 +69,24 @@ export default {
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
 			},
+			fontFamily: {
+				'golos': ['Golos Text', 'sans-serif'],
+			},
+			colors: {
+				'gov-navy': 'hsl(var(--gov-navy))',
+				'gov-blue': 'hsl(var(--gov-blue))',
+				'gov-accent': 'hsl(var(--gov-accent))',
+				'gov-gold': 'hsl(var(--gov-gold))',
+				'gov-light': 'hsl(var(--gov-light))',
+			},
 			keyframes: {
 				'accordion-down': {
-					from: {
-						height: '0'
-					},
-					to: {
-						height: 'var(--radix-accordion-content-height)'
-					}
+					from: { height: '0' },
+					to: { height: 'var(--radix-accordion-content-height)' }
 				},
 				'accordion-up': {
-					from: {
-						height: 'var(--radix-accordion-content-height)'
-					},
-					to: {
-						height: '0'
-					}
+					from: { height: 'var(--radix-accordion-content-height)' },
+					to: { height: '0' }
 				}
 			},
 			animation: {
