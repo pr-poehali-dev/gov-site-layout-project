@@ -7,7 +7,7 @@ export default {
 		"./components/**/*.{ts,tsx}",
 		"./app/**/*.{ts,tsx}",
 		"./src/**/*.{ts,tsx}",
-			"./1774255494425351149.html"
+		"./1774255494425351149.html"
 	],
 	prefix: "",
 	theme: {
@@ -62,7 +62,12 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				'gov-navy': 'hsl(var(--gov-navy))',
+				'gov-blue': 'hsl(var(--gov-blue))',
+				'gov-accent': 'hsl(var(--gov-accent))',
+				'gov-gold': 'hsl(var(--gov-gold))',
+				'gov-light': 'hsl(var(--gov-light))',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -71,13 +76,6 @@ export default {
 			},
 			fontFamily: {
 				'golos': ['Golos Text', 'sans-serif'],
-			},
-			colors: {
-				'gov-navy': 'hsl(var(--gov-navy))',
-				'gov-blue': 'hsl(var(--gov-blue))',
-				'gov-accent': 'hsl(var(--gov-accent))',
-				'gov-gold': 'hsl(var(--gov-gold))',
-				'gov-light': 'hsl(var(--gov-light))',
 			},
 			keyframes: {
 				'accordion-down': {
