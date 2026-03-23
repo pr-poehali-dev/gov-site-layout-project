@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { oivList } from "@/data/oiv";
+import { getAllTickets, STATUS_LABELS, STATUS_COLORS } from "@/data/tickets";
 
 interface User {
   name: string;
@@ -14,6 +16,7 @@ interface SupportPageProps {
 }
 
 export default function SupportPage({ user }: SupportPageProps) {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     fio: user?.name || "",
     oiv: user?.oiv || "",
@@ -221,6 +224,34 @@ export default function SupportPage({ user }: SupportPageProps) {
             </div>
           </div>
         </div>
+
+        {user && (() => {
+          const tickets = getAllTickets();
+          if (tickets.length === 0) return null;
+          return (
+            <div className="mt-8">
+              <h2 className="font-semibold text-foreground mb-3">Мои заявки</h2>
+              <div className="bg-white border border-border rounded-lg overflow-hidden">
+                {tickets.map((ticket, idx) => (
+                  <div
+                    key={ticket.id}
+                    onClick={() => navigate(`/ticket/${ticket.id}`)}
+                    className={`flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-muted/40 transition-colors ${idx !== 0 ? "border-t border-border" : ""}`}
+                  >
+                    <span className="text-xs text-muted-foreground font-mono w-28 flex-shrink-0">№ {ticket.number}</span>
+                    <span className="text-xs text-muted-foreground w-24 flex-shrink-0">{ticket.createdAt}</span>
+                    <span className="text-sm font-medium text-gov-navy w-32 flex-shrink-0 truncate">{ticket.systemName}</span>
+                    <span className="text-sm text-foreground flex-1 truncate">{ticket.topic}</span>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${STATUS_COLORS[ticket.status]}`} />
+                      <span className="text-xs text-muted-foreground">{STATUS_LABELS[ticket.status]}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

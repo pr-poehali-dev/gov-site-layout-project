@@ -11,6 +11,7 @@ import CatalogPage from "@/pages/CatalogPage";
 import SupportPage from "@/pages/SupportPage";
 import ProfilePage from "@/pages/ProfilePage";
 import AdminPage from "@/pages/AdminPage";
+import TicketPage from "@/pages/TicketPage";
 import NotFound from "./pages/NotFound";
 import { InfoSystem, OIV } from "@/data/oiv";
 
@@ -51,6 +52,7 @@ function AppContent() {
           <Route path="/support" element={<SupportPage user={user} />} />
           <Route path="/profile" element={<ProfilePage user={user} />} />
           <Route path="/admin" element={<AdminPage user={user} />} />
+          <Route path="/ticket/:ticketId" element={<TicketPage user={user} />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
