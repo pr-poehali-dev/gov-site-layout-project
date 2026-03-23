@@ -35,6 +35,36 @@ const TAB_ICONS: Record<TabKey, string> = {
   webinars: "Video",
 };
 
+interface RequestFormTile {
+  id: string;
+  name: string;
+  fileType: "docx" | "xls" | "pdf";
+  fileName: string;
+}
+
+const FILE_TYPE_ICONS: Record<RequestFormTile["fileType"], string> = {
+  docx: "FileText",
+  xls: "FileSpreadsheet",
+  pdf: "FileImage",
+};
+
+const FILE_TYPE_COLORS: Record<RequestFormTile["fileType"], string> = {
+  docx: "text-blue-600 bg-blue-50",
+  xls: "text-green-600 bg-green-50",
+  pdf: "text-red-600 bg-red-50",
+};
+
+const INITIAL_TILES: Record<string, RequestFormTile[]> = {
+  epgu: [
+    {
+      id: "epgu-1",
+      name: "форма заявки для учётных записей",
+      fileType: "docx",
+      fileName: "zayavka_uchetnye_zapisi.docx",
+    },
+  ],
+};
+
 export default function SystemCardPage({ user }: SystemCardPageProps) {
   const { systemId } = useParams<{ systemId: string }>();
   const navigate = useNavigate();
@@ -47,6 +77,40 @@ export default function SystemCardPage({ user }: SystemCardPageProps) {
     instructions: result?.system.instructionsContent || "",
     npa: result?.system.npaContent || "",
   });
+
+  const [requestTiles, setRequestTiles] = useState<Record<string, RequestFormTile[]>>(INITIAL_TILES);
+  const [showAddTileModal, setShowAddTileModal] = useState(false);
+  const [newTile, setNewTile] = useState<{ name: string; fileType: RequestFormTile["fileType"]; fileName: string }>({
+    name: "",
+    fileType: "docx",
+    fileName: "",
+  });
+
+  const currentTiles = systemId ? (requestTiles[systemId] || []) : [];
+
+  const handleAddTile = () => {
+    if (!systemId || !newTile.name.trim() || !newTile.fileName.trim()) return;
+    const tile: RequestFormTile = {
+      id: `${systemId}-${Date.now()}`,
+      name: newTile.name.trim(),
+      fileType: newTile.fileType,
+      fileName: newTile.fileName.trim(),
+    };
+    setRequestTiles((prev) => ({
+      ...prev,
+      [systemId]: [...(prev[systemId] || []), tile],
+    }));
+    setNewTile({ name: "", fileType: "docx", fileName: "" });
+    setShowAddTileModal(false);
+  };
+
+  const handleRemoveTile = (tileId: string) => {
+    if (!systemId) return;
+    setRequestTiles((prev) => ({
+      ...prev,
+      [systemId]: (prev[systemId] || []).filter((t) => t.id !== tileId),
+    }));
+  };
 
   const [asuzForm, setAsuzForm] = useState({
     fio: user?.name || "",
@@ -193,7 +257,9 @@ export default function SystemCardPage({ user }: SystemCardPageProps) {
         )}
 
         {activeTab === "asuz" && (
-          <div className="max-w-2xl">
+          <>
+          <div className="flex gap-6 items-start">
+            <div className="flex-1 min-w-0 max-w-2xl">
             <div className="mb-5">
               <h2 className="font-semibold text-foreground">Заявка в службу технической поддержки</h2>
               <p className="text-sm text-muted-foreground mt-1">
@@ -386,7 +452,128 @@ export default function SystemCardPage({ user }: SystemCardPageProps) {
                 </div>
               </form>
             )}
+            </div>
+
+            {/* Контейнер "Формы заявок" */}
+            <div className="w-64 flex-shrink-0">
+              <div className="bg-white border border-border rounded-lg overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
+                  <span className="text-sm font-medium text-foreground">Формы заявок</span>
+                  {user?.role === "admin" && (
+                    <button
+                      onClick={() => setShowAddTileModal(true)}
+                      className="flex items-center gap-1 text-xs text-gov-accent hover:text-gov-navy transition-colors"
+                    >
+                      <Icon name="Plus" size={13} />
+                      Добавить
+                    </button>
+                  )}
+                </div>
+                <div className="p-3 overflow-y-auto max-h-[420px]">
+                  {currentTiles.length === 0 ? (
+                    <div className="text-center py-6 text-muted-foreground">
+                      <Icon name="FolderOpen" size={28} className="mx-auto mb-2 opacity-30" />
+                      <p className="text-xs">Нет прикреплённых форм</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {currentTiles.map((tile) => (
+                        <div
+                          key={tile.id}
+                          className="relative group"
+                          style={{ width: "113px", height: "113px" }}
+                        >
+                          <div className="w-full h-full border border-border rounded-lg bg-white hover:shadow-md transition-shadow flex flex-col items-center justify-center gap-1.5 p-2 cursor-pointer">
+                            <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${FILE_TYPE_COLORS[tile.fileType]}`}>
+                              <Icon name={FILE_TYPE_ICONS[tile.fileType]} size={18} />
+                            </div>
+                            <span className="text-[10px] text-center text-foreground leading-tight line-clamp-3 w-full">
+                              {tile.name}
+                            </span>
+                            <span className="text-[9px] text-muted-foreground uppercase font-medium">
+                              .{tile.fileType}
+                            </span>
+                          </div>
+                          {user?.role === "admin" && (
+                            <button
+                              onClick={() => handleRemoveTile(tile.id)}
+                              className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-destructive text-white rounded-full text-[9px] items-center justify-center hidden group-hover:flex transition-all"
+                            >
+                              <Icon name="X" size={9} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
+
+          {/* Модальное окно добавления плитки */}
+          {showAddTileModal && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowAddTileModal(false)}>
+              <div className="bg-white rounded-xl shadow-xl p-6 w-80" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-foreground">Добавить форму заявки</h3>
+                  <button onClick={() => setShowAddTileModal(false)} className="text-muted-foreground hover:text-foreground">
+                    <Icon name="X" size={16} />
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">Название</label>
+                    <input
+                      type="text"
+                      value={newTile.name}
+                      onChange={(e) => setNewTile({ ...newTile, name: e.target.value })}
+                      className="w-full border border-input rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                      placeholder="Название документа"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">Имя файла</label>
+                    <input
+                      type="text"
+                      value={newTile.fileName}
+                      onChange={(e) => setNewTile({ ...newTile, fileName: e.target.value })}
+                      className="w-full border border-input rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                      placeholder="document.docx"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">Формат</label>
+                    <select
+                      value={newTile.fileType}
+                      onChange={(e) => setNewTile({ ...newTile, fileType: e.target.value as RequestFormTile["fileType"] })}
+                      className="w-full border border-input rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring bg-white"
+                    >
+                      <option value="docx">.docx — Word</option>
+                      <option value="xls">.xls — Excel</option>
+                      <option value="pdf">.pdf — PDF</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-5">
+                  <button
+                    onClick={() => setShowAddTileModal(false)}
+                    className="flex-1 px-4 py-2 text-sm border border-border rounded hover:bg-muted transition-colors"
+                  >
+                    Отмена
+                  </button>
+                  <button
+                    onClick={handleAddTile}
+                    disabled={!newTile.name.trim() || !newTile.fileName.trim()}
+                    className="flex-1 px-4 py-2 text-sm bg-gov-navy text-white rounded hover:bg-gov-blue transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Добавить
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          </>
         )}
 
         {activeTab === "website" && (
